@@ -1,0 +1,100 @@
+<link rel="import" href="bower_components/polymer/polymer.html">
+<link rel="import" href="bower_components/paper-listbox/paper-listbox.html">
+<link rel="import" href="bower_components/paper-item/paper-item.html">
+<link rel="import" href="bower_components/iron-signals/iron-signals.html">
+<link rel="import" href="bower_components/iron-ajax/iron-ajax.html">
+<link rel="import" href="wv-player.html">
+
+
+<dom-module id="wv-playlist">
+
+  <template>
+    <style>
+    paper-item[last] {
+      color: red;
+    }
+    </style>
+    <iron-signals on-iron-signal-refresh="doRefresh"></iron-signals>
+    <wv-player id="player"></wv-player>
+    <iron-ajax
+        id="delete"
+        url="/api/entries/"
+        method="DELETE"
+        content-type="application/json"
+        handle-as="json"
+        on-response="deleteResponse"
+        on-error="handleError"
+        ></iron-ajax>
+    <iron-ajax
+        id="stop"
+        url="/api/player/stop"
+        method="POST"
+        content-type="application/json"
+        handle-as="json"
+        on-response="stopResponse"
+        on-error="handleError"
+        ></iron-ajax>
+    <paper-listbox>
+      <template is="dom-repeat" items="{{list}}">
+        <paper-item
+          last$="[[item.last]]"
+          aria-url="{{item.value}}"
+          on-contextmenu="onContext"
+          on-mousedown="onMouse"
+        >{{item.value}}</paper-item>
+      </template>
+    </paper-listbox>
+  </template>
+
+  <script>
+    Polymer({
+      is: "wv-playlist",
+      ready: function() {
+        this.list = [];
+      },
+      doRefresh: function(e, detail, sender) {
+        if (detail && detail.length >= 0) {
+          this.list = detail;
+        } else {
+          console.error(detail);
+        }
+      },
+      doDelete: function(e, detail, sender) {
+        if (detail) {
+          this.$.delete.url = '/api/entries/'+encodeURIComponent(detail);
+          this.$.delete.generateRequest();
+        } else {
+          console.error(detail);
+        }
+      },
+      onMouse: function(e) {
+        if (e.button === 0) {
+          console.log(e.target.ariaUrl);
+          this.$.player.play(e.target.ariaUrl);
+        }
+      },
+      onContext: function(e) {
+        e.preventDefault();
+        if (e.button === 2 && e.ctrlKey) {
+          this.doDelete(null, e.target.ariaUrl, null);
+        } else if (e.button === 2) {
+          this.$.stop.generateRequest();
+        }
+        return false;
+      },
+      setByLastProperty: function(item) {
+        return item.last;
+      },
+      deleteResponse: function(e, detail, sender) {
+        this.fire('iron-signal', {name: 'pull'});
+      },
+      stopResponse: function(e, detail, sender) {
+        this.fire('iron-signal', {name: 'pull'});
+      },
+      handleError: function(e, detail, sender) {
+        console.error(this.$.delete.lastError);
+      }
+    });
+  </script>
+
+</dom-module>

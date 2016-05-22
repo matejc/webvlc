@@ -1,0 +1,42 @@
+<link rel="import" href="bower_components/polymer/polymer.html">
+<link rel="import" href="bower_components/iron-ajax/iron-ajax.html">
+<link rel="import" href="bower_components/iron-signals/iron-signals.html">
+
+<dom-module id="wv-pull">
+  <template>
+    <iron-signals on-iron-signal-pull="doPull"></iron-signals>
+    <iron-ajax
+        id="entries"
+        url="/api/entries"
+        method="GET"
+        handle-as="json"
+        on-response="handleResponse"
+        on-error="handleError"
+        ></iron-ajax>
+  </template>
+  <script>
+    Polymer({
+      is: "wv-pull",
+      ready: function() {
+        this.async(function() {
+          this.doPull(true);
+        }.bind(this), 100);
+      },
+      doPull: function(interval) {
+        this.$.entries.generateRequest();
+        if (interval === true) {
+          this.async(function() {
+            this.doPull(true);
+          }.bind(this), 2000);
+        }
+      },
+      handleResponse: function(e, detail, sender) {
+        this.fire('iron-signal', {name: 'refresh', data: this.$.entries.lastResponse});
+      },
+      handleError: function(e, detail, sender) {
+        console.error(this.$.entries.lastError);
+      }
+    });
+  </script>
+
+</dom-module>

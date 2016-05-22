@@ -1,0 +1,46 @@
+<link rel="import" href="bower_components/polymer/polymer.html">
+<link rel="import" href="bower_components/iron-ajax/iron-ajax.html">
+
+<dom-module id="wv-paste">
+  <template>
+    <iron-ajax
+        id="sendurl"
+        url="/api/entries"
+        method="POST"
+        content-type="application/json"
+        handle-as="json"
+        on-response="handleResponse"
+        on-error="handleError"
+        ></iron-ajax>
+  </template>
+  <script>
+    Polymer({
+      is: "wv-paste",
+      ready: function() {
+        document.addEventListener('paste', function(e) {
+          var data;
+          e.preventDefault();
+          // IE
+          if (window.clipboardData) {
+            data = window.clipboardData.getData('Text');
+            // Standard-compliant browsers
+          } else {
+            data = e.clipboardData.getData('text');
+          }
+          this.onPaste(data);
+        }.bind(this));
+      },
+      onPaste: function(data) {
+        this.$.sendurl.body = { value: data };
+        this.$.sendurl.generateRequest();
+      },
+      handleResponse: function(e, detail, sender) {
+        this.fire('iron-signal', {name: 'pull'});
+      },
+      handleError: function(e, detail, sender) {
+        console.error(this.$.sendurl.lastError);
+      }
+    });
+  </script>
+
+</dom-module>

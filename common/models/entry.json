@@ -1,0 +1,41 @@
+{
+  "name": "entry",
+  "base": "PersistedModel",
+  "idInjection": true,
+  "options": {
+    "validateUpsert": true
+  },
+  "mixins": {
+    "TimeStamp": {
+      "createdAt": "createdOn",
+      "updatedAt": "updatedOn",
+      "required": false
+    }
+  },
+  "properties": {
+    "name": {
+      "type": "string"
+    },
+    "value": {
+      "type": "string",
+      "id": true,
+      "required": true
+    }
+  },
+  "validations": [],
+  "relations": {},
+  "acls": [],
+  "methods": {
+    "list": {
+      "isStatic": true,
+      "http": [{
+        "path": "/",
+        "verb": "get"
+      }],
+      "returns": {
+        "type": "[object]",
+        "root": true
+      }
+    }
+  }
+}

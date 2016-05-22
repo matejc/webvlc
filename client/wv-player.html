@@ -1,0 +1,35 @@
+<link rel="import" href="bower_components/polymer/polymer.html">
+<link rel="import" href="bower_components/iron-ajax/iron-ajax.html">
+<link rel="import" href="bower_components/iron-signals/iron-signals.html">
+
+<dom-module id="wv-player">
+  <template>
+    <iron-ajax
+        id="play"
+        url="/api/player/play"
+        method="POST"
+        content-type="application/json"
+        handle-as="json"
+        on-response="playResponse"
+        on-error="handleError"
+        ></iron-ajax>
+  </template>
+  <script>
+    Polymer({
+      is: "wv-player",
+      ready: function() {
+      },
+      play: function(value) {
+        this.$.play.body = {value: value};
+        this.$.play.generateRequest();
+      },
+      playResponse: function(e, detail, sender) {
+        this.fire('iron-signal', {name: 'pull'});
+      },
+      handleError: function(e, detail, sender) {
+        console.error(this.$.play.lastError);
+      }
+    });
+  </script>
+
+</dom-module>
