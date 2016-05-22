@@ -18,7 +18,16 @@ util.inherits(VlcEmitter, EventEmitter);
 var emitter = new VlcEmitter();
 
 exports.emitter = emitter;
-exports.lastUrl = null;
+exports.last = {url: null, title: null, playing: false};
+
+emitter.on('stopped', function() {
+  exports.last.title = '';
+  exports.last.playing = false;
+});
+emitter.on('playing', function() {
+  exports.last.title = '';
+  exports.last.playing = true;
+});
 
 exports.run = function(args, env, callback) {
   var output = "";
@@ -114,10 +123,11 @@ exports.init = function(cb) {
 exports.play = function(url, cb) {
   prevState = 'false';
   send("clear\r\nadd " + url, function(err, data) {
+    exports.last = {};
     if (err) {
-      exports.lastUrl = null;
+      console.error(err.stack||err.message||err);
     } else {
-      exports.lastUrl = url;
+      exports.last.url = url;
     }
     cb(err, data);
   });
@@ -125,9 +135,8 @@ exports.play = function(url, cb) {
 
 exports.stop = function(cb) {
   prevState = 'false';
-  console.trace('stop')
   send("stop", function(err, data) {
-    exports.lastUrl = null;
+    exports.last = {};
     cb(err, data);
   });
 }
@@ -147,13 +156,12 @@ exports.voldown = function(steps, cb) {
 
 exports.current = function(cb) {
   new Promise(function(resolve, reject) {
-    var result = {url: exports.lastUrl};
     send("get_title", function(err, data) {
       if (err) {
         reject(err);
       } else {
-        result.title = data;
-        resolve(result);
+        exports.last.title = data;
+        resolve(exports.last);
       }
     });
   })
@@ -212,7 +220,8 @@ function send(str, cb) {
       //trim vlc verbosity
       body = body.replace(/status change:.*\r?\n/g, '');
       body = body.replace(/^[\s\S]*?>\ ?(>\ )?/, '');
-      body = body.replace(/> Bye-bye!.*/, '');
+      body = body.replace(/[\s>\ ]*Bye-bye!\s*/, '');
+      // if (str === 'get_title') console.log('"',body.trim(),'"')
       cb(null, body.trim());
     });
 

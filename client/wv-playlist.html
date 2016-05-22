@@ -1,6 +1,7 @@
 <link rel="import" href="bower_components/polymer/polymer.html">
 <link rel="import" href="bower_components/paper-listbox/paper-listbox.html">
 <link rel="import" href="bower_components/paper-item/paper-item.html">
+<link rel="import" href="bower_components/paper-input/paper-input.html">
 <link rel="import" href="bower_components/iron-signals/iron-signals.html">
 <link rel="import" href="bower_components/iron-ajax/iron-ajax.html">
 <link rel="import" href="wv-player.html">
@@ -25,15 +26,7 @@
         on-response="deleteResponse"
         on-error="handleError"
         ></iron-ajax>
-    <iron-ajax
-        id="stop"
-        url="/api/player/stop"
-        method="POST"
-        content-type="application/json"
-        handle-as="json"
-        on-response="stopResponse"
-        on-error="handleError"
-        ></iron-ajax>
+    <paper-input label="Paste youtube/radio url ..."></paper-input>
     <paper-listbox>
       <template is="dom-repeat" items="{{list}}">
         <paper-item
@@ -41,7 +34,12 @@
           aria-url="{{item.value}}"
           on-contextmenu="onContext"
           on-mousedown="onMouse"
-        >{{item.value}}</paper-item>
+        >
+          <template is="dom-if" if="{{hasTitle(item)}}">
+            <span>{{item.title}}</span>&nbsp;-&nbsp;
+          </template>
+          <span>{{item.value}}</span>
+        </paper-item>
       </template>
     </paper-listbox>
   </template>
@@ -69,8 +67,8 @@
       },
       onMouse: function(e) {
         if (e.button === 0) {
-          console.log(e.target.ariaUrl);
-          this.$.player.play(e.target.ariaUrl);
+          var target = e.target.tagName === 'PAPER-ITEM' ? e.target : e.target.parentNode;
+          this.$.player.play(target.ariaUrl);
         }
       },
       onContext: function(e) {
@@ -78,17 +76,17 @@
         if (e.button === 2 && e.ctrlKey) {
           this.doDelete(null, e.target.ariaUrl, null);
         } else if (e.button === 2) {
-          this.$.stop.generateRequest();
+          this.$.player.stop();
         }
         return false;
+      },
+      hasTitle: function(item) {
+        return !!item.title;
       },
       setByLastProperty: function(item) {
         return item.last;
       },
       deleteResponse: function(e, detail, sender) {
-        this.fire('iron-signal', {name: 'pull'});
-      },
-      stopResponse: function(e, detail, sender) {
         this.fire('iron-signal', {name: 'pull'});
       },
       handleError: function(e, detail, sender) {

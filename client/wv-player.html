@@ -13,6 +13,15 @@
         on-response="playResponse"
         on-error="handleError"
         ></iron-ajax>
+    <iron-ajax
+        id="stop"
+        url="/api/player/stop"
+        method="POST"
+        content-type="application/json"
+        handle-as="json"
+        on-response="stopResponse"
+        on-error="handleError"
+        ></iron-ajax>
   </template>
   <script>
     Polymer({
@@ -25,6 +34,12 @@
       },
       playResponse: function(e, detail, sender) {
         this.fire('iron-signal', {name: 'pull'});
+      },
+      stopResponse: function(e, detail, sender) {
+        this.fire('iron-signal', {name: 'pull'});
+      },
+      stop: function() {
+        this.$.stop.generateRequest();
       },
       handleError: function(e, detail, sender) {
         console.error(this.$.play.lastError);
