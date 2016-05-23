@@ -74,7 +74,8 @@
       onContext: function(e) {
         e.preventDefault();
         if (e.button === 2 && e.ctrlKey) {
-          this.doDelete(null, e.target.ariaUrl, null);
+          var target = e.target.tagName === 'PAPER-ITEM' ? e.target : e.target.parentNode;
+          this.doDelete(null, target.ariaUrl, null);
         } else if (e.button === 2) {
           this.$.player.stop();
         }
