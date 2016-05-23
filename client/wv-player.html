@@ -11,7 +11,7 @@
         content-type="application/json"
         handle-as="json"
         on-response="playResponse"
-        on-error="handleError"
+        on-error="playError"
         ></iron-ajax>
     <iron-ajax
         id="stop"
@@ -20,13 +20,36 @@
         content-type="application/json"
         handle-as="json"
         on-response="stopResponse"
-        on-error="handleError"
+        on-error="stopError"
+        ></iron-ajax>
+    <iron-ajax
+        id="volup"
+        url="/api/player/volup"
+        method="POST"
+        content-type="application/json"
+        handle-as="json"
+        ></iron-ajax>
+    <iron-ajax
+        id="voldown"
+        url="/api/player/voldown"
+        method="POST"
+        content-type="application/json"
+        handle-as="json"
         ></iron-ajax>
   </template>
   <script>
     Polymer({
       is: "wv-player",
       ready: function() {
+        document.addEventListener('keypress', function(e) {
+          if (e.code === 'Equal') {
+            e.preventDefault();
+            this.volup();
+        } else if (e.code === 'Minus') {
+            e.preventDefault();
+            this.voldown();
+          }
+        }.bind(this));
       },
       play: function(value) {
         this.$.play.body = {value: value};
@@ -41,8 +64,17 @@
       stop: function() {
         this.$.stop.generateRequest();
       },
-      handleError: function(e, detail, sender) {
+      volup: function() {
+        this.$.volup.generateRequest();
+      },
+      voldown: function() {
+        this.$.voldown.generateRequest();
+      },
+      playError: function(e, detail, sender) {
         console.error(this.$.play.lastError);
+      },
+      stopError: function(e, detail, sender) {
+        console.error(this.$.stop.lastError);
       }
     });
   </script>

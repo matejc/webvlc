@@ -13,7 +13,7 @@
     }
   },
   "properties": {
-    "name": {
+    "title": {
       "type": "string"
     },
     "value": {

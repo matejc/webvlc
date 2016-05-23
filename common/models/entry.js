@@ -19,30 +19,77 @@ module.exports = function(Entry) {
     new Promise(function(resolve, reject) {
       vlc.current(function(err, data) {
         if (err) console.error(err.stack || err.message || err);
-        resolve(data);
+        resolve({current: data});
       })
     })
     .then(function(data) {
-      Entry.find({order: 'updatedOn DESC'}, function(err, entries) {
-        for (var k in entries) {
-          if (entries[k].value === data.url) {
-            console.log(data.playing, !lastTitle, data.title)
-            if (data.playing && data.title && lastTitle !== data.title) {
-              entries[k].title = data.title;
-              lastTitle = data.title;
-            } else if (data.playing && lastTitle) {
-              entries[k].title = lastTitle;
-            } else {
-              entries[k].title = '';
-              lastTitle = '';
-            }
-            entries[k].last = true;
-          } else {
-            entries[k].last = false;
-          }
+        return new Promise(function(resolve, reject) {
+            Entry.find({order: 'createdOn DESC'}, function(err, entries) {
+                if (err) {
+                    reject(err);
+                } else {
+                    data.entries = entries;
+                    resolve(data);
+                }
+            });
+        });
+    })
+    .then(function(data) {
+        var entries = data.entries;
+        var current = data.current;
+        var results = [];
+        var promises = [];
+        function changePromise(r, doc) {
+            return new Promise(function(resolve, reject) {
+                doc.updateAttribute('title', r.title, function(err) {
+                    if (err) {
+                        reject(err);
+                    } else {
+                        resolve();
+                    }
+                })
+            });
         }
-        cb(err, entries);
-      });
+
+        for (var k in entries) {
+            var entry = entries[k];
+            var r = {
+                value: entry.value,
+                title: entry.title || '',
+                last: false
+            };
+
+            if (entry.value === current.url) {
+                if (current.playing && current.title && entry.title !== current.title) {
+                    r.title = current.title;
+                    promises.push(changePromise(r, entry));
+                }
+                r.last = true;
+            }
+            results.push(r);
+        }
+        data.promises = promises;
+        data.results = results;
+        return data;
+    })
+    .then(function(data) {
+        return new Promise(function(resolve, reject) {
+            if (data.promises.length === 0) {
+                resolve(data);
+            } else {
+                Promise.all(data.promises)
+                    .then(function() {
+                        resolve(data);
+                    })
+                    .catch(reject);
+            }
+        });
+    })
+    .then(function(data) {
+        cb(null, data.results);
+    })
+    .catch(function(err) {
+        cb(err);
     });
   };
 

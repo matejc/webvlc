@@ -94,25 +94,40 @@ module.exports = function(Player) {
 
   Player.next = function(callback) {
     var Entry = loopback.getModel('entry');
-    Entry.find({order: 'updatedOn ASC'}, function(err, entries) {
-      if (err) {
-        callback(err);
-      } else {
-        var i = 0;
-        for (var k in entries) {
-          if (entries[k].value === vlc.lastUrl && entries[i+1]) {
-            var url = entries[i+1].value;
-            vlc.play(url, function(err) {
-              if (err) {
-                console.error(err);
-              }
+    new Promise(function(resolve, reject) {
+      vlc.current(function(err, data) {
+        if (err) console.error(err.stack || err.message || err);
+        resolve(data);
+      })
+    })
+    .then(function(current) {
+        return new Promise(function(resolve, reject) {
+            Entry.find({order: 'createdOn ASC'}, function(err, entries) {
+                if (err) {
+                    callback(err);
+                } else {
+                    var errorFun = function(err) {
+                        if (err) console.error(err.stack || err.message || err);
+                    };
+                    var i = 0;
+                    for (var k in entries) {
+                        if (entries[k].value === current.url && entries[i+1]) {
+                            var url = entries[i+1].value;
+                            vlc.play(url, errorFun);
+                            return resolve();
+                        }
+                        i++;
+                    }
+                    resolve();
+                }
             });
-            return callback(null);
-          }
-          i++;
-        }
+        });
+    })
+    .then(function() {
         callback(null);
-      }
+    })
+    .catch(function(err) {
+        console.error(err.stack || err.message || err);
     });
   };
 
