@@ -1,65 +1,65 @@
 {
-  "name": "player",
-  "plural": "player",
-  "base": "Model",
-  "idInjection": true,
-  "options": {
-    "validateUpsert": true
-  },
-  "properties": {},
-  "validations": [],
-  "relations": {},
-  "acls": [],
-  "methods": {
-    "play": {
-      "isStatic": true,
-      "accepts": [{
-        "arg": "body",
-        "type": "object",
-        "require": true,
-        "http": {
-          "source": "body"
+    "name": "player",
+    "plural": "player",
+    "base": "Model",
+    "idInjection": true,
+    "options": {
+        "validateUpsert": true
+    },
+    "properties": {},
+    "validations": [],
+    "relations": {},
+    "acls": [],
+    "methods": {
+        "play": {
+            "isStatic": true,
+            "accepts": [{
+                "arg": "body",
+                "type": "object",
+                "require": true,
+                "http": {
+                    "source": "body"
+                }
+            }],
+            "http": [{
+                "path": "/play",
+                "verb": "post"
+            }]
+        },
+        "stop": {
+            "isStatic": true,
+            "http": [{
+                "path": "/stop",
+                "verb": "post"
+            }]
+        },
+        "pause": {
+            "isStatic": true,
+            "http": [{
+                "path": "/pause",
+                "verb": "post"
+            }]
+        },
+        "volup": {
+            "isStatic": true,
+            "http": [{
+                "path": "/volup",
+                "verb": "post"
+            }]
+        },
+        "voldown": {
+            "isStatic": true,
+            "http": [{
+                "path": "/voldown",
+                "verb": "post"
+            }]
+        },
+        "next": {
+            "isStatic": true,
+            "http": [{
+                "path": "/next",
+                "verb": "post"
+            }]
         }
-      }],
-      "http": [{
-        "path": "/play",
-        "verb": "post"
-      }]
-    },
-    "stop": {
-      "isStatic": true,
-      "http": [{
-        "path": "/stop",
-        "verb": "post"
-      }]
-    },
-    "pause": {
-      "isStatic": true,
-      "http": [{
-        "path": "/pause",
-        "verb": "post"
-      }]
-    },
-    "volup": {
-      "isStatic": true,
-      "http": [{
-        "path": "/volup",
-        "verb": "post"
-      }]
-    },
-    "voldown": {
-      "isStatic": true,
-      "http": [{
-        "path": "/voldown",
-        "verb": "post"
-      }]
-    },
-    "next": {
-      "isStatic": true,
-      "http": [{
-        "path": "/next",
-        "verb": "post"
-      }]
     }
-  }
 }
